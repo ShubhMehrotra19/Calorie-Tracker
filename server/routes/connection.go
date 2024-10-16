@@ -1,30 +1,39 @@
 package routes
 
-import(
-    "log"
-    "context"
-    "time"
+import (
+	"context"
+	"fmt"
+	"log"
+	"time"
 
-    "go.mongodb.org/mongo-driver/mongo"
-    "go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-from DBinstance *mongo.Client{
-    MongoDb := "mongo://localhost:27017/caloriedb"
+func DBinstance() *mongo.Client {
+	MongoDb := "mongodb://localhost:27017/caloriedb"
 
-   client, err := mongo.NewClient(options.Cient().ApplyURI(MongoDb))
-   if err != nil {
-    log.Fatal(err)
-   }
+	client, err := mongo.NewClient(options.Client().ApplyURI(MongoDb))
+	if err != nil {
+		log.Fatal(err)
+	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel() // Correct cancel call
 
-   ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-   driver.cancel()
-   err = client.Connect(ctx)
+	err = client.Connect(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-   if err != nil {
-    log.Fatal(err)
-   }
-   fmt.Println("Conected to mongodb")
-   return client
+	fmt.Println("Connected to MongoDB")
+	return client
+}
+
+// Initialize the MongoDB client
+var Client *mongo.Client = DBinstance()
+
+// Helper to open a collection
+func OpenCollection(client *mongo.Client, collectionName string) *mongo.Collection {
+	return client.Database("caloriedb").Collection(collectionName)
 }
